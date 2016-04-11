@@ -1,0 +1,33 @@
+<project default="usage" basedir="." xmlns:sf="antlib:com.salesforce">
+
+    <taskdef uri="antlib:com.salesforce" classpath="lib/salesforce_ant_36.0/ant-salesforce.jar" />
+    <property file="build.properties"/>
+    <property environment="env"/>
+
+    <target name="retrieve" description="Retrieves AwsApi package components.">
+        <sf:retrieve
+            username="${awsapi.username}"
+            password="${awsapi.password}"
+            serverurl="${awsapi.serverurl}"
+            retrieveTarget="src"
+            packageNames="Amazon Web Services API"
+        />
+    </target>
+
+    <target name="deploy" description="Subtarget for avoiding fail-on-error">
+        <sf:deploy
+            username="${awsapi.username}"
+            password="${awsapi.password}"
+            serverurl="${awsapi.serverurl}"
+            deployRoot="src"
+        />
+    </target>
+
+    <target name="usage">
+        <java classname="org.apache.tools.ant.Main">
+            <arg value="-projecthelp"/>
+            <arg value="-quiet"/>
+        </java>
+    </target>
+
+</project>
