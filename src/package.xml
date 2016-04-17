@@ -6,6 +6,7 @@
     <packageType>MANAGED</packageType>
     <types>
         <members>Client</members>
+        <members>Ec2</members>
         <name>ApexClass</name>
     </types>
     <version>36.0</version>
