@@ -7,6 +7,7 @@
     <types>
         <members>Client</members>
         <members>Ec2</members>
+        <members>S3</members>
         <name>ApexClass</name>
     </types>
     <version>36.0</version>

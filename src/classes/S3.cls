@@ -1,0 +1,457 @@
+/**
+ * AwsApi.Client.accessKeyId = 'XXXXXXXXXXXXXXXXXXXX';
+ * AwsApi.Client.secretkey = 'YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY';
+ * AwsApi.S3 s3 = new AwsApi.S3();
+ */
+public class S3 extends Client {
+
+    public class ClientException extends Exception {}
+    
+    /**
+     * When you create a bucket, you do so against the s3.amazonaws.com endpoint. (If you do a DNS lookup
+     * against some-non-existant-bucket.s3.amazonaws.com you'll note that it maps back to S3's US Standard
+     * cluster, which is treated as us-east-1 for the purposes of Signature Version 4 requests.)
+     * https://forums.aws.amazon.com/message.jspa?messageID=533653#533653
+     */
+    public S3(String region) {
+        this.service = 's3';
+        this.region = region;
+    }
+
+    /**
+     * Gives you an instance of an S3 bucket, eg:
+     * new AwsApi.S3('us-west-2').bucket('kickthebucket');
+     */
+    public Bucket bucket(String name) {
+        Bucket bucket = new Bucket(name);
+        bucket.region = this.region;
+        return bucket;
+    }
+
+    /**
+     * This section describes operations you can perform on Amazon S3 objects.
+     * http://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectOps.html
+     */
+    public class Bucket extends Client {
+
+        /**
+         * Bucket's name.
+         */
+        public String Name;
+
+        /**
+         * Date the bucket was created.
+         */
+        public String CreationDate;
+
+        Bucket(String bucket) {
+            this.Name = bucket;
+            this.region = 'us-east-1';
+            this.service = 's3';
+        }
+
+        public Contents contents(String key) {
+            Contents contents = new Contents(key);
+            contents.region = this.region;
+            contents.service = 's3';
+            contents.bucket = this.Name;
+            return contents;
+        }
+
+        /**
+         * This implementation of the GET operation returns some or all (up to 1000) of the objects in a bucket.
+         * http://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketGET.html
+         */
+        public ListBucketResult get(ListBucketRequest listBucketRequest) {
+            PageReference pr = new PageReference('https://' + this.name + '.s3.amazonaws.com/');
+            Map<String,String> parameters = new RequestFormatter(listBucketRequest).getMap();
+            pr.getParameters().putAll(parameters);
+            
+            Url endpoint = new Url(pr.getUrl());
+            HttpRequest request = this.signedRequest('GET', endpoint, null, null, null);
+            HttpResponse response = new Http().send(request);
+            if (response.getStatusCode() != 200) throw new ClientException(response.getBody());
+
+            ListBucketResult result = new ListBucketResult();
+            result.Contents = new List<Contents>();
+
+            for (Dom.XmlNode node : response.getBodyDocument().getRootElement().getChildElements()) {
+                if (node.getName() == 'Name') result.Name = node.getText();
+                if (node.getName() == 'Prefix') result.Prefix = node.getText();
+                if (node.getName() == 'Marker') result.Marker = node.getText();
+                if (node.getName() == 'MaxKeys') result.MaxKeys = Integer.valueOf(node.getText());
+                if (node.getName() == 'IsTruncated') result.IsTruncated = node.getText() == 'true';
+                if (node.getName() != 'Contents') continue;
+
+                String data = new ResponseFormatter(node).getJson();
+                Object dto = Json.deserialize(data, Contents.class);
+                result.Contents.add((Contents)dto);
+            }
+
+            return result;
+        }
+        
+        /**
+         * The DELETE operation removes the null version (if there is one) of an object
+         * and inserts a delete marker, which becomes the current version of the object.
+         * http://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectDELETE.html
+         */
+        public HttpResponse destroy(String key) {
+            Url endpoint = new Url('https://' + this.name + '.s3.amazonaws.com/' + key);
+            HttpRequest request = this.signedRequest('DELETE', endpoint, null, null, null);
+            HttpResponse response = new Http().send(request);
+            if (response.getStatusCode() != 204) throw new ClientException(response.getBody());
+            return response;
+        }
+
+        /**
+         * This implementation of the PUT operation adds an object to a bucket.
+         * You must have WRITE permissions on a bucket to add an object to it.
+         * http://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectPUT.html
+         */
+        public HttpResponse put(String key, Blob data) {
+            Url endpoint = new Url('https://' + this.name + '.s3.amazonaws.com/' + key);
+            HttpRequest request = this.signedRequest('PUT', endpoint, null, null, null);
+            HttpResponse response = new Http().send(request);
+            if (response.getStatusCode() != 200) throw new ClientException(response.getBody());
+            return response;
+        }
+
+    }
+
+    /**
+     * Metadata about each object returned.
+     */
+    public class Contents extends Client {
+
+        String bucket;
+
+        /**
+         * The object's key.
+         */
+        public String Key;
+
+        /**
+         * Date and time the object was last modified.
+         */
+        public Datetime LastModified;
+
+        /**
+         * The entity tag is an MD5 hash of the object. The ETag only reflects changes to the contents of an
+         * object, not its metadata.
+         */
+        public String ETag;
+
+        /**
+         * Size in bytes of the object.
+         */
+        public String Size;
+
+        /**
+         * STANDARD | STANDARD_IA | REDUCED_REDUNDANCY | GLACIER
+         */
+        public String StorageClass;
+
+        /**
+         * Bucket owner.
+         */
+        public Owner Owner;
+
+        Contents(String key) {
+            this.Key = key;
+        }
+        
+        /**
+         * Provides the time period, in seconds, for which the generated presigned URL is valid.
+         */
+        public HttpRequest sign() {
+            Url endpoint = new Url('https://' + this.bucket + '.s3.amazonaws.com/' + this.Key);
+            return this.signedRequest('GET', endpoint, null, null, true);
+        }
+
+    }
+
+    /**
+     * This implementation of the GET operation returns a list of all
+     * buckets owned by the authenticated sender of the request.
+     * http://docs.aws.amazon.com/AmazonS3/latest/API/RESTServiceGET.html
+     */
+    public class ListBucketRequest {
+
+        /**
+         * A delimiter is a character you use to group keys.
+         *
+         * All keys that contain the same string between the prefix, if specified, and the first occurrence of
+         * the delimiter after the prefix are grouped under a single result element, CommonPrefixes. If you
+         * don't specify the prefix parameter, then the substring starts at the beginning of the key. The keys
+         * that are grouped under CommonPrefixes result element are not returned elsewhere in the response.
+         *
+         */
+        public String delimiter;
+
+        /**
+         * Requests Amazon S3 to encode the response and specifies the encoding method to use.
+         *
+         * An object key can contain any Unicode character; however, XML 1.0 parser cannot parse some
+         * characters, such as characters with an ASCII value from 0 to 10. For characters that are not
+         * supported in XML 1.0, you can add this parameter to request that Amazon S3 encode the keys in the
+         * response.
+         */
+        public String encodingType;
+
+        /**
+         * Specifies the key to start with when listing objects in a bucket. Amazon S3 returns object keys in
+         * UTF-8 binary order, starting with key after the marker in order.
+         */
+        public String marker;
+
+        /**
+         * Sets the maximum number of keys returned in the response body. You can add this to your request if
+         * you want to retrieve fewer than the default 1000 keys.
+         *
+         * The response might contain fewer keys but will never contain more. If there are additional keys
+         * that satisfy the search criteria but were not returned because max-keys was exceeded, the response
+         * contains <IsTruncated>true</IsTruncated>. To return the additional keys, see marker.
+         */
+        public String maxKeys;
+
+        /**
+         * Limits the response to keys that begin with the specified prefix. You can use prefixes to separate
+         * a bucket into different groupings of keys. (You can think of using prefix to make groups in the
+         * same way you'd use a folder in a file system.)
+         */
+        public String prefix;
+
+    }
+    
+    /**
+     * This implementation of the GET operation returns a list of all
+     * buckets owned by the authenticated sender of the request.
+     * http://docs.aws.amazon.com/AmazonS3/latest/API/RESTServiceGET.html
+     *
+     * AwsApi.S3 s3 = new AwsApi.S3('us-west-2');
+     * ListAllMyBucketsResult result = s3.get();
+     *
+     */
+    public ListAllMyBucketsResult get() {
+        HttpRequest request = this.signedRequest('GET', new Url('https://s3.amazonaws.com/'), null, null, null);
+        HttpResponse response = new Http().send(request);
+        if (response.getStatusCode() != 200) throw new ClientException(response.getBody());
+
+        String data = new ResponseFormatter(response.getBodyDocument().getRootElement()).getJson();
+        Object dto = Json.deserialize(data, ListAllMyBucketsResult.class);
+        return (ListAllMyBucketsResult)dto;
+    }
+    
+    /**
+     * This implementation of the PUT operation creates a new bucket.
+     * http://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketPUT.html
+     */
+    public HttpResponse put(String bucketName) {
+        HttpRequest request = this.signedRequest('PUT', new Url('https://' + bucketName + '.s3.amazonaws.com/'), null, null, null);
+        HttpResponse response = new Http().send(request);
+        if (response.getStatusCode() != 200) throw new ClientException(response.getBody());
+        return response;
+    }
+    
+    /**
+     * This implementation of the DELETE operation deletes the bucket named in the URI.
+     * All objects (including all object versions and delete markers) in the bucket must
+     * be deleted before the bucket itself can be deleted.
+     * http://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketDELETE.html
+     */
+    public HttpResponse destroy(String bucketName) {
+        HttpRequest request = this.signedRequest('DELETE', new Url('https://' + bucketName + '.s3.amazonaws.com/'), null, null, null);
+        HttpResponse response = new Http().send(request);
+        if (response.getStatusCode() != 204) throw new ClientException(response.getBody());
+        return response;
+    }
+    
+    /**
+     * Takes any request object and formats it as HTTP headers, for example:
+     *
+     * GetRequest: [
+     *     delimiter=test,
+     *     encodingType=text/plain
+     * ]
+     *
+     * delimiter: test,
+     * encoding-type: text/plain
+     */
+    @TestVisible class RequestFormatter {
+
+        Map<String,String> p = new Map<String,String>();
+        
+        public RequestFormatter(Object dto) {
+            if (dto == null) return;
+            Map<String,Object> key2value = (Map<String,Object>)Json.deserializeUntyped(Json.serialize(dto));
+            for (String key : key2value.keySet()) {
+                Object value = key2value.get(key);
+                if (value == null) continue;
+                key = key.replaceAll('([A-Z])', '-$0').toLowerCase();
+                p.put(key, String.valueOf(value));
+            }
+        }
+
+        public Map<String,String> getMap() {
+            return p;
+        }
+        
+    }
+
+    /**
+     * Takes any response XML and formats into DTO-ready JSON, for example:
+     *
+     * <DescribeRegionsResponse>
+     *     <requestId>eb34bc90-389f-46c1-81bd-d8492f88983a</requestId>
+     *     <regionInfo>
+     *         <item>
+     *             <regionEndpoint>ec2.us-west-1.amazonaws.com</regionEndpoint>
+     *             <regionName>us-west-1</regionName>
+     *         </item>
+     *     </regionInfo>
+     * </DescribeRegionsResponse>
+     *
+     * {
+     *     "requestId": "fff48ea8-2445-492e-a2cf-6bf2582896fb",
+     *     "regionInfo": [
+     *         {
+     *             "regionEndpoint": "ec2.us-west-1.amazonaws.com",
+     *             "regionName": "us-west-1"
+     *         }
+     *     ]
+     * }
+     */
+    @TestVisible class ResponseFormatter {
+
+        JsonGenerator g = Json.createGenerator(true);
+
+        public ResponseFormatter(Dom.XmlNode node) {
+            try {
+                traverseNode(node);
+            } catch (Exception e) {
+                e.setMessage(g.getAsString());
+                throw e;
+            }
+        }
+
+        public String getJson() {
+            return g.getAsString();
+        }
+
+        public void traverseNode(Dom.XmlNode node) {
+
+            if (!String.isEmpty(node.getName()) && node.getChildren().isEmpty()) {
+                //found self closing tag (not text and no children) eg <reason/>
+                g.writeNull();
+                return;
+            }
+
+            g.writeStartObject();
+
+            for (Dom.XmlNode child : node.getChildren()) {
+
+                String name = child.getName();
+                String text = child.getText();
+
+                if (String.isBlank(name) && String.isBlank(text)) {
+                    //found whitespace
+                    continue;
+                }
+
+                if (!String.isBlank(text)) {
+                    //found text
+                    g.writeFieldName(child.getName());
+                    Object value = text;
+
+                    //datetime, boolean, string
+                    if (child.getName().endsWith('Time')) value = Json.deserialize('"' + value + '"', Datetime.class);
+                    else if (value == 'true') value = true;
+                    else if (value == 'false') value = false;
+                    g.writeObject(value);
+
+                } else if (name == 'Buckets') {
+                    //found collection
+                    g.writeFieldName(child.getName());
+                    g.writeStartArray();
+                    for (Dom.XmlNode item : child.getChildElements()) traverseNode(item);
+                    g.writeEndArray();
+                    
+                } else {
+                    //found object
+                    g.writeFieldName(child.getName());
+                    traverseNode(child);
+                }
+                
+            }
+            
+            g.writeEndObject();
+        }
+        
+    }
+
+    /**
+     * This implementation of the GET operation returns a list of all buckets owned by the authenticated
+     * sender of the request.
+     * http://docs.aws.amazon.com/AmazonS3/latest/API/RESTServiceGET.html
+     */
+    public class ListAllMyBucketsResult {
+        public Owner Owner;
+        public List<Bucket> Buckets;
+    }
+
+    /**
+     * Container for bucket owner information.
+     */
+    public class Owner {
+
+        /**
+         * Bucket owner's user ID.
+         */
+        public String ID;
+
+        /**
+         * Bucket owner's display name.
+         */
+        public String DisplayName;
+
+    }
+
+    /**
+     * This implementation of the GET operation returns some or all (up to 1000) of the objects in a bucket.
+     * http://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketGET.html
+     */
+    public class ListBucketResult {
+
+        /**
+         * Name of the bucket.
+         */
+        public String Name;
+
+        /**
+         * Keys that begin with the indicated prefix.
+         */
+        public String Prefix;
+
+        /**
+         * Indicates where in the bucket listing begins.
+         */
+        public String Marker;
+
+        /**
+         * The maximum number of keys returned in the response body.
+         */
+        public Integer MaxKeys;
+
+        /**
+         * Specifies whether (true) or not (false) all of the results were returned.
+         */
+        public Boolean IsTruncated;
+
+        /**
+         * Metadata about each object returned.
+         */
+        public List<Contents> Contents;
+    }
+
+}
