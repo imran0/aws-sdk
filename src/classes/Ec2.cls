@@ -1,15 +1,32 @@
 /**
- * AwsApi.Client.accessKeyId = 'XXXXXXXXXXXXXXXXXXXX';
- * AwsApi.Client.secretkey = 'YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY';
- * AwsApi.Ec2 client = new AwsApi.Ec2('us-west-2');
+ * Example usage:
+ *
+ * String accessKeyId = 'XXXXXXXXXXXXXXXXXXXX';
+ * String secretkey = 'YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY';
+ * AwsSdk.Connector connector = new AwsSdk.Connector(accessKeyId, secretKey);
+ *
+ * String region = 'eu-west-2';
+ * AwsSdk.Ec2 ec2 = new AwsSdk.Ec2(connector, region);
+ * AwsSdk.Ec2.DescribeInstancesResponse response = ec2.describeInstances(null);
  */
-public class Ec2 extends Client {
+public class Ec2 {
 
     class ClientException extends Exception {}
-    
-    public Ec2(String region) {
-        this.service = 'ec2';
-        this.region = region;
+
+    /**
+     * Signs AWS requests
+     */
+    Connector connector;
+
+    /**
+     * Usage:
+     * String region = 'us-west-2';
+     * AwsApi.Ec2 ec2 = connector.ec2(region);
+     */
+    public Ec2(Connector connector, String region) {
+        this.connector = connector;
+        this.connector.region = region;
+        this.connector.service = 'ec2';
     }
 
     /**
@@ -365,9 +382,15 @@ public class Ec2 extends Client {
         Map<String,String> parameters = new RequestFormatter(describeInstancesRequest).getMap();
         parameters.put('Version', '2015-10-01');
         parameters.put('Action', 'DescribeInstances');
-        HttpRequest request = this.requestFor(parameters);
+
+        PageReference pr = new PageReference('https://ec2.' + this.connector.region + '.amazonaws.com/');
+        pr.getParameters().putAll(parameters);
+
+        Url endpoint = new Url(pr.getUrl());
+        HttpRequest request = this.connector.signedRequest('GET', endpoint, null, null, null);
         HttpResponse response = new Http().send(request);
-        
+        if (response.getStatusCode() != 200) throw new ClientException(response.getBody());
+
         String data = new ResponseFormatter(response.getBodyDocument()).getJson();
         Object dto = Json.deserialize(data, DescribeInstancesResponse.class);
         return (DescribeInstancesResponse)dto;
@@ -386,9 +409,14 @@ public class Ec2 extends Client {
         parameters.put('Version', '2015-10-01');
         parameters.put('Action', 'DescribeRegions');
 
-        HttpRequest request = this.requestFor(parameters);
+        PageReference pr = new PageReference('https://ec2.' + this.connector.region + '.amazonaws.com/');
+        pr.getParameters().putAll(parameters);
+
+        Url endpoint = new Url(pr.getUrl());
+        HttpRequest request = this.connector.signedRequest('GET', endpoint, null, null, null);
         HttpResponse response = new Http().send(request);
-        
+        if (response.getStatusCode() != 200) throw new ClientException(response.getBody());
+
         String data = new ResponseFormatter(response.getBodyDocument()).getJson();
         Object dto = Json.deserialize(data, DescribeRegionsResponse.class);
         return (DescribeRegionsResponse)dto;
@@ -407,7 +435,11 @@ public class Ec2 extends Client {
         parameters.put('Version', '2015-10-01');
         parameters.put('Action', 'RunInstances');
 
-        HttpRequest request = this.requestFor(parameters);
+        PageReference pr = new PageReference('https://ec2.' + this.connector.region + '.amazonaws.com/');
+        pr.getParameters().putAll(parameters);
+
+        Url endpoint = new Url(pr.getUrl());
+        HttpRequest request = this.connector.signedRequest('GET', endpoint, null, null, null);
         HttpResponse response = new Http().send(request);
         if (response.getStatusCode() != 200) throw new ClientException(response.getBody());
         

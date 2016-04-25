@@ -1,21 +1,36 @@
 /**
- * AwsApi.Client.accessKeyId = 'XXXXXXXXXXXXXXXXXXXX';
- * AwsApi.Client.secretkey = 'YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY';
- * AwsApi.S3 s3 = new AwsApi.S3();
+ * Example usage:
+ *
+ * String accessKeyId = 'XXXXXXXXXXXXXXXXXXXX';
+ * String secretkey = 'YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY';
+ * AwsSdk.Connector connector = new AwsSdk.Connector(accessKeyId, secretKey);
+ *
+ * String region = 'us-west-2';
+ * AwsApi.S3 s3 = connector.s3(region);
+ * AwsApi.S3.ListBucketResult result = s3.bucket('bucketname').get(null);
  */
-public class S3 extends Client {
+public class S3 {
 
+    /**
+     *
+     */
     public class ClientException extends Exception {}
-    
+
+    /**
+     * Signs AWS requests
+     */
+    Connector connector;
+
     /**
      * When you create a bucket, you do so against the s3.amazonaws.com endpoint. (If you do a DNS lookup
      * against some-non-existant-bucket.s3.amazonaws.com you'll note that it maps back to S3's US Standard
      * cluster, which is treated as us-east-1 for the purposes of Signature Version 4 requests.)
      * https://forums.aws.amazon.com/message.jspa?messageID=533653#533653
      */
-    public S3(String region) {
-        this.service = 's3';
-        this.region = region;
+    public S3(Connector connector, String region) {
+        this.connector = connector;
+        this.connector.region = region;
+        this.connector.service = 's3';
     }
 
     /**
@@ -23,16 +38,14 @@ public class S3 extends Client {
      * new AwsApi.S3('us-west-2').bucket('kickthebucket');
      */
     public Bucket bucket(String name) {
-        Bucket bucket = new Bucket(name);
-        bucket.region = this.region;
-        return bucket;
+        return new Bucket(this.connector, name);
     }
 
     /**
      * This section describes operations you can perform on Amazon S3 objects.
      * http://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectOps.html
      */
-    public class Bucket extends Client {
+    public class Bucket {
 
         /**
          * Bucket's name.
@@ -44,18 +57,15 @@ public class S3 extends Client {
          */
         public String CreationDate;
 
-        Bucket(String bucket) {
+        Connector connector;
+
+        Bucket(Connector connector, String bucket) {
+            this.connector = connector;
             this.Name = bucket;
-            this.region = 'us-east-1';
-            this.service = 's3';
         }
 
         public Contents contents(String key) {
-            Contents contents = new Contents(key);
-            contents.region = this.region;
-            contents.service = 's3';
-            contents.bucket = this.Name;
-            return contents;
+            return new Contents(this.connector, key);
         }
 
         /**
@@ -68,7 +78,7 @@ public class S3 extends Client {
             pr.getParameters().putAll(parameters);
             
             Url endpoint = new Url(pr.getUrl());
-            HttpRequest request = this.signedRequest('GET', endpoint, null, null, null);
+            HttpRequest request = this.connector.signedRequest('GET', endpoint, null, null, null);
             HttpResponse response = new Http().send(request);
             if (response.getStatusCode() != 200) throw new ClientException(response.getBody());
 
@@ -98,7 +108,7 @@ public class S3 extends Client {
          */
         public HttpResponse destroy(String key) {
             Url endpoint = new Url('https://' + this.name + '.s3.amazonaws.com/' + key);
-            HttpRequest request = this.signedRequest('DELETE', endpoint, null, null, null);
+            HttpRequest request = this.connector.signedRequest('DELETE', endpoint, null, null, null);
             HttpResponse response = new Http().send(request);
             if (response.getStatusCode() != 204) throw new ClientException(response.getBody());
             return response;
@@ -111,7 +121,7 @@ public class S3 extends Client {
          */
         public HttpResponse put(String key, Blob data) {
             Url endpoint = new Url('https://' + this.name + '.s3.amazonaws.com/' + key);
-            HttpRequest request = this.signedRequest('PUT', endpoint, null, null, null);
+            HttpRequest request = this.connector.signedRequest('PUT', endpoint, null, null, null);
             HttpResponse response = new Http().send(request);
             if (response.getStatusCode() != 200) throw new ClientException(response.getBody());
             return response;
@@ -122,7 +132,7 @@ public class S3 extends Client {
     /**
      * Metadata about each object returned.
      */
-    public class Contents extends Client {
+    public class Contents {
 
         String bucket;
 
@@ -157,7 +167,10 @@ public class S3 extends Client {
          */
         public Owner Owner;
 
-        Contents(String key) {
+        Connector connector;
+
+        Contents(Connector connector, String key) {
+            this.connector = connector;
             this.Key = key;
         }
         
@@ -166,7 +179,7 @@ public class S3 extends Client {
          */
         public HttpRequest sign() {
             Url endpoint = new Url('https://' + this.bucket + '.s3.amazonaws.com/' + this.Key);
-            return this.signedRequest('GET', endpoint, null, null, true);
+            return this.connector.signedRequest('GET', endpoint, null, null, true);
         }
 
     }
@@ -234,7 +247,7 @@ public class S3 extends Client {
      *
      */
     public ListAllMyBucketsResult get() {
-        HttpRequest request = this.signedRequest('GET', new Url('https://s3.amazonaws.com/'), null, null, null);
+        HttpRequest request = this.connector.signedRequest('GET', new Url('https://s3.amazonaws.com/'), null, null, null);
         HttpResponse response = new Http().send(request);
         if (response.getStatusCode() != 200) throw new ClientException(response.getBody());
 
@@ -248,7 +261,7 @@ public class S3 extends Client {
      * http://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketPUT.html
      */
     public HttpResponse put(String bucketName) {
-        HttpRequest request = this.signedRequest('PUT', new Url('https://' + bucketName + '.s3.amazonaws.com/'), null, null, null);
+        HttpRequest request = this.connector.signedRequest('PUT', new Url('https://' + bucketName + '.s3.amazonaws.com/'), null, null, null);
         HttpResponse response = new Http().send(request);
         if (response.getStatusCode() != 200) throw new ClientException(response.getBody());
         return response;
@@ -261,7 +274,7 @@ public class S3 extends Client {
      * http://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketDELETE.html
      */
     public HttpResponse destroy(String bucketName) {
-        HttpRequest request = this.signedRequest('DELETE', new Url('https://' + bucketName + '.s3.amazonaws.com/'), null, null, null);
+        HttpRequest request = this.connector.signedRequest('DELETE', new Url('https://' + bucketName + '.s3.amazonaws.com/'), null, null, null);
         HttpResponse response = new Http().send(request);
         if (response.getStatusCode() != 204) throw new ClientException(response.getBody());
         return response;

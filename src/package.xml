@@ -5,7 +5,7 @@
     <namespacePrefix>AwsApi</namespacePrefix>
     <packageType>MANAGED</packageType>
     <types>
-        <members>Client</members>
+        <members>Connector</members>
         <members>Ec2</members>
         <members>S3</members>
         <name>ApexClass</name>
