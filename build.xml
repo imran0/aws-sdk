@@ -4,21 +4,21 @@
     <property file="build.properties"/>
     <property environment="env"/>
 
-    <target name="retrieve" description="Retrieves AwsApi package components.">
+    <target name="retrieve" description="Retrieves AwsSdk package components.">
         <sf:retrieve
-            username="${awsapi.username}"
-            password="${awsapi.password}"
-            serverurl="${awsapi.serverurl}"
+            username="${awssdk.username}"
+            password="${awssdk.password}"
+            serverurl="${awssdk.serverurl}"
             retrieveTarget="src"
-            packageNames="Amazon Web Services API"
+            packageNames="Amazon Web Services SDK"
         />
     </target>
 
-    <target name="deploy" description="Subtarget for avoiding fail-on-error">
+    <target name="deploy" description="Deploys AwsSdk package components.">
         <sf:deploy
-            username="${awsapi.username}"
-            password="${awsapi.password}"
-            serverurl="${awsapi.serverurl}"
+            username="${awssdk.username}"
+            password="${awssdk.password}"
+            serverurl="${awssdk.serverurl}"
             deployRoot="src"
         />
     </target>

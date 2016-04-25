@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Package xmlns="http://soap.sforce.com/2006/04/metadata">
-    <fullName>Amazon Web Services API</fullName>
+    <fullName>Amazon Web Services SDK</fullName>
     <apiAccessLevel>Unrestricted</apiAccessLevel>
-    <namespacePrefix>AwsApi</namespacePrefix>
+    <namespacePrefix>AwsSdk</namespacePrefix>
     <packageType>MANAGED</packageType>
     <types>
         <members>Connector</members>
