@@ -1,32 +1,22 @@
 /**
+ * @author bigassforce
+ * Amazon Simple Storage Service SDK for Salesforce Apex
+ *
  * Example usage:
- *
- * String accessKeyId = 'XXXXXXXXXXXXXXXXXXXX';
+ * 
+ * String accessKey = 'XXXXXXXXXXXXXXXXXXXX';
  * String secretkey = 'YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY';
- * AwsSdk.Connector connector = new AwsSdk.Connector(accessKeyId, secretKey);
+ * AwsSdk.Connector connector = new AwsSdk.Connector(accessKey, secretKey);
  *
- * String region = 'us-west-2';
+ * String region = 'us-east-1';
  * AwsApi.S3 s3 = connector.s3(region);
- * AwsApi.S3.ListBucketResult result = s3.bucket('bucketname').get(null);
+ * List<AwsApi.S3.Content> contents = s3.bucket('bucketname').listContents(null);
  */
 public class S3 {
 
-    /**
-     *
-     */
     public class ClientException extends Exception {}
 
-    /**
-     * Signs AWS requests
-     */
     Connector connector;
-
-    /**
-     * When you create a bucket, you do so against the s3.amazonaws.com endpoint. (If you do a DNS lookup
-     * against some-non-existant-bucket.s3.amazonaws.com you'll note that it maps back to S3's US Standard
-     * cluster, which is treated as us-east-1 for the purposes of Signature Version 4 requests.)
-     * https://forums.aws.amazon.com/message.jspa?messageID=533653#533653
-     */
     public S3(Connector connector, String region) {
         this.connector = connector;
         this.connector.region = region;
@@ -34,8 +24,8 @@ public class S3 {
     }
 
     /**
-     * Gives you an instance of an S3 bucket, eg:
-     * new AwsApi.S3('us-west-2').bucket('kickthebucket');
+     * Example usage:
+     * new AwsSdk.Connector('access', 'secret').s3('us-east-1').bucket('bucketname');
      */
     public Bucket bucket(String name) {
         return new Bucket(this.connector, name);
@@ -43,7 +33,7 @@ public class S3 {
 
     /**
      * This section describes operations you can perform on Amazon S3 objects.
-     * http://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectOps.html
+     * https://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectOps.html
      */
     public class Bucket {
 
@@ -55,59 +45,57 @@ public class S3 {
         /**
          * Date the bucket was created.
          */
-        public String CreationDate;
+        public Datetime CreationDate;
 
         Connector connector;
-
         Bucket(Connector connector, String bucket) {
             this.connector = connector;
             this.Name = bucket;
         }
 
-        public Contents contents(String key) {
-            return new Contents(this.connector, key);
+        /**
+         * Example usage:
+         * new AwsSdk.Connector('access', 'secret').s3('us-east-1').bucket('bucketname').content('key');
+         */
+        public Content content(String key) {
+            return new Content(this, key);
         }
 
         /**
          * This implementation of the GET operation returns some or all (up to 1000) of the objects in a bucket.
-         * http://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketGET.html
+         * https://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketGET.html
          */
-        public ListBucketResult get(ListBucketRequest listBucketRequest) {
-            PageReference pr = new PageReference('https://' + this.name + '.s3.amazonaws.com/');
-            Map<String,String> parameters = new RequestFormatter(listBucketRequest).getMap();
+        public List<Content> listContents(ListContentsRequest listContentsRequest) {
+            PageReference pr = new PageReference('https://s3.amazonaws.com/' + this.Name);
+            Map<String,String> parameters = new RequestFormatter(listContentsRequest).getMap();
             pr.getParameters().putAll(parameters);
-            
+
             Url endpoint = new Url(pr.getUrl());
             HttpRequest request = this.connector.signedRequest('GET', endpoint, null, null, null);
             HttpResponse response = new Http().send(request);
             if (response.getStatusCode() != 200) throw new ClientException(response.getBody());
 
             ListBucketResult result = new ListBucketResult();
-            result.Contents = new List<Contents>();
+            result.Contents = new List<Content>();
 
             for (Dom.XmlNode node : response.getBodyDocument().getRootElement().getChildElements()) {
-                if (node.getName() == 'Name') result.Name = node.getText();
-                if (node.getName() == 'Prefix') result.Prefix = node.getText();
-                if (node.getName() == 'Marker') result.Marker = node.getText();
-                if (node.getName() == 'MaxKeys') result.MaxKeys = Integer.valueOf(node.getText());
-                if (node.getName() == 'IsTruncated') result.IsTruncated = node.getText() == 'true';
                 if (node.getName() != 'Contents') continue;
-
                 String data = new ResponseFormatter(node).getJson();
-                Object dto = Json.deserialize(data, Contents.class);
-                result.Contents.add((Contents)dto);
+                Object dto = Json.deserialize(data, Content.class);
+                result.Contents.add((Content)dto);
             }
 
-            return result;
+            return result.Contents;
         }
-        
+
         /**
          * The DELETE operation removes the null version (if there is one) of an object
          * and inserts a delete marker, which becomes the current version of the object.
-         * http://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectDELETE.html
+         * https://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectDELETE.html
          */
-        public HttpResponse destroy(String key) {
-            Url endpoint = new Url('https://' + this.name + '.s3.amazonaws.com/' + key);
+        public HttpResponse deleteContent(String key) {
+            if (key.startsWith('/')) throw new ClientException('Keys should not lead with slash');
+            Url endpoint = new Url('https://s3.amazonaws.com/' + this.Name + '/' + key);
             HttpRequest request = this.connector.signedRequest('DELETE', endpoint, null, null, null);
             HttpResponse response = new Http().send(request);
             if (response.getStatusCode() != 204) throw new ClientException(response.getBody());
@@ -117,11 +105,12 @@ public class S3 {
         /**
          * This implementation of the PUT operation adds an object to a bucket.
          * You must have WRITE permissions on a bucket to add an object to it.
-         * http://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectPUT.html
+         * https://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectPUT.html
          */
-        public HttpResponse put(String key, Blob data) {
-            Url endpoint = new Url('https://' + this.name + '.s3.amazonaws.com/' + key);
-            HttpRequest request = this.connector.signedRequest('PUT', endpoint, null, null, null);
+        public HttpResponse createContent(String key, Map<String,String> headers, Blob payload) {
+            if (key.startsWith('/')) throw new ClientException('Keys should not lead with slash');
+            Url endpoint = new Url('https://s3.amazonaws.com/' + this.Name + '/' + key);
+            HttpRequest request = this.connector.signedRequest('PUT', endpoint, headers, payload, null);
             HttpResponse response = new Http().send(request);
             if (response.getStatusCode() != 200) throw new ClientException(response.getBody());
             return response;
@@ -132,9 +121,7 @@ public class S3 {
     /**
      * Metadata about each object returned.
      */
-    public class Contents {
-
-        String bucket;
+    public class Content {
 
         /**
          * The object's key.
@@ -167,19 +154,22 @@ public class S3 {
          */
         public Owner Owner;
 
-        Connector connector;
-
-        Contents(Connector connector, String key) {
-            this.connector = connector;
+        Bucket bucket;
+        Content(Bucket bucket, String key) {
+            this.bucket = bucket;
             this.Key = key;
         }
-        
+
         /**
          * Provides the time period, in seconds, for which the generated presigned URL is valid.
          */
-        public HttpRequest sign() {
-            Url endpoint = new Url('https://' + this.bucket + '.s3.amazonaws.com/' + this.Key);
-            return this.connector.signedRequest('GET', endpoint, null, null, true);
+        public HttpRequest presign() {
+            String method = 'GET';
+            Url endpoint = new Url('https://s3.amazonaws.com/' + this.bucket.Name + '/' + this.Key);
+            Map<String,String> headers = new Map<String,String>();
+            Blob payload = null;
+            Boolean presign = true;
+            return this.bucket.connector.signedRequest(method, endpoint, headers, payload, presign);
         }
 
     }
@@ -187,9 +177,9 @@ public class S3 {
     /**
      * This implementation of the GET operation returns a list of all
      * buckets owned by the authenticated sender of the request.
-     * http://docs.aws.amazon.com/AmazonS3/latest/API/RESTServiceGET.html
+     * https://docs.aws.amazon.com/AmazonS3/latest/API/RESTServiceGET.html
      */
-    public class ListBucketRequest {
+    public class ListContentsRequest {
 
         /**
          * A delimiter is a character you use to group keys.
@@ -236,50 +226,50 @@ public class S3 {
         public String prefix;
 
     }
-    
+
     /**
      * This implementation of the GET operation returns a list of all
      * buckets owned by the authenticated sender of the request.
-     * http://docs.aws.amazon.com/AmazonS3/latest/API/RESTServiceGET.html
+     * https://docs.aws.amazon.com/AmazonS3/latest/API/RESTServiceGET.html
      *
      * AwsApi.S3 s3 = new AwsApi.S3('us-west-2');
-     * ListAllMyBucketsResult result = s3.get();
+     * List<Bucket> results = s3.get();
      *
      */
-    public ListAllMyBucketsResult get() {
+    public List<Bucket> listBuckets() {
         HttpRequest request = this.connector.signedRequest('GET', new Url('https://s3.amazonaws.com/'), null, null, null);
         HttpResponse response = new Http().send(request);
         if (response.getStatusCode() != 200) throw new ClientException(response.getBody());
 
         String data = new ResponseFormatter(response.getBodyDocument().getRootElement()).getJson();
         Object dto = Json.deserialize(data, ListAllMyBucketsResult.class);
-        return (ListAllMyBucketsResult)dto;
+        return ((ListAllMyBucketsResult)dto).Buckets;
     }
-    
+
     /**
      * This implementation of the PUT operation creates a new bucket.
-     * http://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketPUT.html
+     * https://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketPUT.html
      */
-    public HttpResponse put(String bucketName) {
-        HttpRequest request = this.connector.signedRequest('PUT', new Url('https://' + bucketName + '.s3.amazonaws.com/'), null, null, null);
+    public HttpResponse createBucket(String bucketName) {
+        HttpRequest request = this.connector.signedRequest('PUT', new Url('https://s3.amazonaws.com/' + bucketName), null, null, null);
         HttpResponse response = new Http().send(request);
         if (response.getStatusCode() != 200) throw new ClientException(response.getBody());
         return response;
     }
-    
+
     /**
      * This implementation of the DELETE operation deletes the bucket named in the URI.
      * All objects (including all object versions and delete markers) in the bucket must
      * be deleted before the bucket itself can be deleted.
-     * http://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketDELETE.html
+     * https://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketDELETE.html
      */
-    public HttpResponse destroy(String bucketName) {
-        HttpRequest request = this.connector.signedRequest('DELETE', new Url('https://' + bucketName + '.s3.amazonaws.com/'), null, null, null);
+    public HttpResponse deleteBucket(String bucketName) {
+        HttpRequest request = this.connector.signedRequest('DELETE', new Url('https://s3.amazonaws.com/' + bucketName), null, null, null);
         HttpResponse response = new Http().send(request);
         if (response.getStatusCode() != 204) throw new ClientException(response.getBody());
         return response;
     }
-    
+
     /**
      * Takes any request object and formats it as HTTP headers, for example:
      *
@@ -294,7 +284,7 @@ public class S3 {
     @TestVisible class RequestFormatter {
 
         Map<String,String> p = new Map<String,String>();
-        
+
         public RequestFormatter(Object dto) {
             if (dto == null) return;
             Map<String,Object> key2value = (Map<String,Object>)Json.deserializeUntyped(Json.serialize(dto));
@@ -309,7 +299,7 @@ public class S3 {
         public Map<String,String> getMap() {
             return p;
         }
-        
+
     }
 
     /**
@@ -378,7 +368,7 @@ public class S3 {
                     Object value = text;
 
                     //datetime, boolean, string
-                    if (child.getName().endsWith('Time')) value = Json.deserialize('"' + value + '"', Datetime.class);
+                    if (child.getName() == 'CreationDate' || child.getName() == 'LastModified') value = Json.deserialize('"' + value + '"', Datetime.class);
                     else if (value == 'true') value = true;
                     else if (value == 'false') value = false;
                     g.writeObject(value);
@@ -389,24 +379,24 @@ public class S3 {
                     g.writeStartArray();
                     for (Dom.XmlNode item : child.getChildElements()) traverseNode(item);
                     g.writeEndArray();
-                    
+
                 } else {
                     //found object
                     g.writeFieldName(child.getName());
                     traverseNode(child);
                 }
-                
+
             }
-            
+
             g.writeEndObject();
         }
-        
+
     }
 
     /**
      * This implementation of the GET operation returns a list of all buckets owned by the authenticated
      * sender of the request.
-     * http://docs.aws.amazon.com/AmazonS3/latest/API/RESTServiceGET.html
+     * https://docs.aws.amazon.com/AmazonS3/latest/API/RESTServiceGET.html
      */
     public class ListAllMyBucketsResult {
         public Owner Owner;
@@ -432,7 +422,7 @@ public class S3 {
 
     /**
      * This implementation of the GET operation returns some or all (up to 1000) of the objects in a bucket.
-     * http://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketGET.html
+     * https://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketGET.html
      */
     public class ListBucketResult {
 
@@ -464,7 +454,7 @@ public class S3 {
         /**
          * Metadata about each object returned.
          */
-        public List<Contents> Contents;
+        public List<Content> Contents;
     }
 
 }

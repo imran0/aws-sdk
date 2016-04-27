@@ -6,8 +6,11 @@
     <packageType>MANAGED</packageType>
     <types>
         <members>Connector</members>
+        <members>ConnectorTest</members>
         <members>Ec2</members>
+        <members>Ec2Test</members>
         <members>S3</members>
+        <members>S3Test</members>
         <name>ApexClass</name>
     </types>
     <version>36.0</version>

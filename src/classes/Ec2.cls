@@ -1,28 +1,22 @@
 /**
+ * @author bigassforce
+ * Amazon Elastic Compute Cloud SDK for Salesforce Apex
+ *
  * Example usage:
  *
- * String accessKeyId = 'XXXXXXXXXXXXXXXXXXXX';
+ * String accessKey = 'XXXXXXXXXXXXXXXXXXXX';
  * String secretkey = 'YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY';
- * AwsSdk.Connector connector = new AwsSdk.Connector(accessKeyId, secretKey);
+ * AwsSdk.Connector connector = new AwsSdk.Connector(accessKey, secretKey);
  *
- * String region = 'eu-west-2';
- * AwsSdk.Ec2 ec2 = new AwsSdk.Ec2(connector, region);
+ * String region = 'eu-east-1';
+ * AwsSdk.Ec2 ec2 = connector.ec2(region);
  * AwsSdk.Ec2.DescribeInstancesResponse response = ec2.describeInstances(null);
  */
 public class Ec2 {
 
     class ClientException extends Exception {}
 
-    /**
-     * Signs AWS requests
-     */
     Connector connector;
-
-    /**
-     * Usage:
-     * String region = 'us-west-2';
-     * AwsApi.Ec2 ec2 = connector.ec2(region);
-     */
     public Ec2(Connector connector, String region) {
         this.connector = connector;
         this.connector.region = region;
@@ -112,7 +106,7 @@ public class Ec2 {
 
     /**
      * Launches the specified number of instances using an AMI for which you have permissions.
-     * https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_RunInstances.html?&!
+     * https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_RunInstances.html
      */
     public class RunInstancesRequest {
 
@@ -370,6 +364,22 @@ public class Ec2 {
 
     }
 
+    public class TerminateInstancesRequest {
+
+        /**
+         * Checks whether you have the required permissions for the action, without actually making the request, and
+         * provides an error response. If you have the required permissions, the error response is DryRunOperation.
+         * Otherwise, it is UnauthorizedOperation.
+         */
+        public Boolean DryRun;
+
+        /**
+         * One or more instance IDs.
+         */
+        public List<String> InstanceId;
+
+    }
+
     /**
      * Describes one or more of your instances.
      * https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInstances.html
@@ -401,7 +411,7 @@ public class Ec2 {
      * https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_Region.html
      *
      * Ec2.DescribeRegionsRequest request = new Ec2.DescribeRegionsRequest();
-     * request.RegionName = new List<String>{'us-west-1','us-west-2'};
+     * request.RegionName = new List<String>{'us-east-1'};
      * client.describeRegions(request);
      */
     public DescribeRegionsResponse describeRegions(DescribeRegionsRequest describeRegionsRequest) {
@@ -449,12 +459,43 @@ public class Ec2 {
     }
 
     /**
+     * Shuts down one or more instances.
+     * https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_TerminateInstances.html
+     */
+    public TerminateInstancesResponse terminateInstances(TerminateInstancesRequest terminateInstancesRequest) {
+        Map<String,String> parameters = new RequestFormatter(terminateInstancesRequest).getMap();
+        parameters.put('Version', '2015-10-01');
+        parameters.put('Action', 'TerminateInstances');
+
+        PageReference pr = new PageReference('https://ec2.' + this.connector.region + '.amazonaws.com/');
+        pr.getParameters().putAll(parameters);
+
+        Url endpoint = new Url(pr.getUrl());
+        HttpRequest request = this.connector.signedRequest('GET', endpoint, null, null, null);
+        HttpResponse response = new Http().send(request);
+        if (response.getStatusCode() != 200) throw new ClientException(response.getBody());
+
+        String data = new ResponseFormatter(response.getBodyDocument()).getJson();
+        Object dto = Json.deserialize(data, TerminateInstancesResponse.class);
+        return (TerminateInstancesResponse)dto;
+    }
+
+    /**
      * Describes one or more of your instances.
      * https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInstances.html
      */
     public class DescribeInstancesResponse {
+
+        /**
+         * The ID of the request.
+         */
         public String requestId;
+
+        /**
+         * Zero or more reservations.
+         */
         public List<Reservation> reservationSet;
+
     }
 
     /**
@@ -939,11 +980,23 @@ public class Ec2 {
     public class InstanceState {
         /**
          * The low byte represents the state. The high byte is an opaque internal value and should be ignored.
+         * - 00 pending
+         * - 16 running
+         * - 32 shutting-down
+         * - 48 terminated
+         * - 64 stopping
+         * - 80 stopped
          */
         public String code;
 
         /**
          * The current state of the instance.
+         * - pending
+         * - running
+         * - shutting-down
+         * - terminated
+         * - stopping
+         * - stopped
          */
         public String name;
 
@@ -1032,12 +1085,52 @@ public class Ec2 {
         public String requestId;
 
         /**
-         * Zero or more reservations.
+         * One or more instances.
          */
-        public Reservation reservation;
+        public List<Instance> instancesSet;
 
     }
-    
+
+    /**
+     * Shuts down one or more instances.
+     * https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_TerminateInstances.html
+     */
+    public class TerminateInstancesResponse {
+
+        /**
+         * Information about one or more terminated instances.
+         */
+        public List<InstanceStateChange> instancesSet;
+
+        /**
+         * The ID of the request.
+         */
+        public String requestId;
+    }
+
+    /**
+     * Describes an instance state change.
+     * https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_InstanceStateChange.html
+     */
+    public class InstanceStateChange {
+
+        /**
+         * The current state of the instance.
+         */
+        public InstanceState currentState;
+
+        /**
+         * The ID of the instance.
+         */
+        public String instanceId;
+
+        /**
+         * The previous state of the instance.
+         */
+        public InstanceState previousState;
+
+    }
+
     /**
      * Takes any request object and formats it as query parameters, for example:
      * 
