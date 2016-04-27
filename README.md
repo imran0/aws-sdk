@@ -66,4 +66,4 @@ When interacting with the AWS offerings, we encounter a few variations: signatur
 - [S3.RequestFormatter](https://github.com/bigassforce/aws-sdk/blob/b2b383566e0ad64367c178d6ae270d098dde5a40/src/classes/S3.cls#L273-L303) takes any DTO and flattens into HTTP headers
 - [S3.ResponseFormatter](https://github.com/bigassforce/aws-sdk/blob/b2b383566e0ad64367c178d6ae270d098dde5a40/src/classes/S3.cls#L305-L394) converts XML (sans collection support) for hydrating into DTO
 
-Where supported, we use region-agnostic API endpoints to avoid proliferation of Remote Site Settings. It would be prudent to store your access keys and secret credentials in a Custom Setting.
+Where supported, we use region-agnostic API endpoints to avoid proliferation of Remote Site Settings. It would be prudent to store your access keys and secret credentials in a Protected Custom Setting.
