@@ -53,8 +53,15 @@ public class Connector {
         headers.put('Host', endpoint.getHost());
         String signedHeaders = signedHeadersFor(headers);
 
+        //handle spaces and special characters in paths
+        String spec = '';
+        spec += endpoint.getProtocol() + '://';
+        spec += endpoint.getHost();
+        spec += rfc3986For(endpoint.getPath(), false);
+        if (endpoint.getQuery() != null) spec += '?' + endpoint.getQuery();
+
         //prepare parameters
-        PageReference pr = new PageReference(endpoint.toExternalForm());
+        PageReference pr = new PageReference(spec);
         Map<String,String> parameters = pr.getParameters();
         parameters.put('X-Amz-Algorithm', 'AWS4-HMAC-SHA256');
         parameters.put('X-Amz-Credential', this.accessKeyId + '/' + credentialScope);
