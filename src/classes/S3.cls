@@ -81,8 +81,9 @@ public class S3 {
             for (Dom.XmlNode node : response.getBodyDocument().getRootElement().getChildElements()) {
                 if (node.getName() != 'Contents') continue;
                 String data = new ResponseFormatter(node).getJson();
-                Object dto = Json.deserialize(data, Content.class);
-                result.Contents.add((Content)dto);
+                Content dto = (Content)Json.deserialize(data, Content.class);
+                dto.bucket = this;
+                result.Contents.add(dto);
             }
 
             return result.Contents;
