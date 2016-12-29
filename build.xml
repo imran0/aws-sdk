@@ -1,6 +1,6 @@
 <project default="usage" basedir="." xmlns:sf="antlib:com.salesforce">
 
-    <taskdef uri="antlib:com.salesforce" classpath="lib/salesforce_ant_36.0/ant-salesforce.jar" />
+    <taskdef uri="antlib:com.salesforce" classpath="lib/salesforce_ant_38.0/ant-salesforce.jar" />
     <property file="build.properties"/>
     <property environment="env"/>
 

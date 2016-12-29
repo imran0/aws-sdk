@@ -3,7 +3,6 @@
     <fullName>Amazon Web Services SDK</fullName>
     <apiAccessLevel>Unrestricted</apiAccessLevel>
     <namespacePrefix>AwsSdk</namespacePrefix>
-    <packageType>MANAGED</packageType>
     <types>
         <members>Connector</members>
         <members>ConnectorTest</members>
@@ -13,5 +12,5 @@
         <members>S3Test</members>
         <name>ApexClass</name>
     </types>
-    <version>36.0</version>
+    <version>38.0</version>
 </Package>
