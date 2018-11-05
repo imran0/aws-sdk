@@ -11,6 +11,7 @@
         //act
         System.assertNotEquals(null, connector.s3('region'), 'wrong s3');
         System.assertNotEquals(null, connector.ec2('region'), 'wrong ec2');
+        System.assertNotEquals(null, connector.sns('region'), 'wrong sns');
     }
 
     static testmethod void testSignedRequest() {
@@ -54,10 +55,10 @@
 
     static testmethod void testCanonicalUriFor() {
         //act
-        String canonicalUri = Connector.canonicalUriFor('https://localhost/foo bar/baz');
+        String canonicalUri = Connector.canonicalUriFor('https://localhost/foo+bar/baz');
 
         //assert
-        System.assertEquals('/foo%20bar/baz', canonicalUri, 'wrong uri');
+        System.assertEquals('/foo%2Bbar/baz', canonicalUri, 'wrong uri');
     }
 
     static testmethod void testCanonicalQueryStringFor() {

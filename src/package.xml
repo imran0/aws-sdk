@@ -10,6 +10,8 @@
         <members>Ec2Test</members>
         <members>S3</members>
         <members>S3Test</members>
+        <members>Sns</members>
+        <members>SnsTest</members>
         <name>ApexClass</name>
     </types>
     <version>44.0</version>

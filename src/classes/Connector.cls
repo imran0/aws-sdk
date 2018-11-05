@@ -8,7 +8,7 @@
  * AwsSdk.S3 s3 = new AwsSdk.Connector(key, secret).s3('us-east-1');
  * AwsSdk.Ec2 ec2 = new AwsSdk.Connector(key, secret).ec2('us-east-1');
  */
-public class Connector {
+global class Connector {
 
     String accessKeyId;
     String secretKey;
@@ -16,7 +16,7 @@ public class Connector {
     public String region;
     @TestVisible Datetime now = Datetime.now();
 
-    public Connector(String accessKeyId, String secretKey) {
+    global Connector(String accessKeyId, String secretKey) {
         this.accessKeyId = accessKeyId;
         this.secretKey = secretKey;
     }
@@ -27,6 +27,10 @@ public class Connector {
 
     public Ec2 ec2(String region) {
         return new ec2(this, region);
+    }
+
+    global Sns sns(String region) {
+        return new sns(this, region);
     }
 
     /**
