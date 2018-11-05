@@ -24,6 +24,7 @@
             sns.publish('TopicArn', 'Payload');
             System.assert(false, 'wrong exception');
         } catch (Sns.ErrorResponseException e) {
+            //assert
             System.assertEquals('Sender', e.Error.Type);
             System.assertEquals('NotFound', e.Error.Code);
             System.assertEquals('Topic does not exist', e.Error.Message);
@@ -61,7 +62,7 @@
                 + '    <ResponseMetadata>'
                 + '        <RequestId>f24d0373-7dde-58fd-9559-57295091b79f</RequestId>'
                 + '    </ResponseMetadata>'
-                + '</ErrorResponse>'
+                + '</PublishResponse>'
             );
             return response;
         }

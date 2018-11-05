@@ -3,11 +3,13 @@ global class Sns {
     global class ErrorResponseException extends Exception {
         global String RequestId;
         global Error Error = new Error();
-        public ErrorResponseException(HttpResponse response) {
-            this.Error.Type = response.getBody().substringBetween('<Type>', '</Type>');
-            this.Error.Code = response.getBody().substringBetween('<Code>', '</Code>');
-            this.RequestId = response.getBody().substringBetween('<RequestId>', '</RequestId>');
-            this.Error.Message = response.getBody().substringBetween('<Message>', '</Message>');
+        public ErrorResponseException(Dom.Document dom) {
+            Dom.XmlNode root = dom.getRootElement();
+            String ns = root.getNamespace();
+            this.RequestId = root.getChildElement('RequestId', ns).getText();
+            this.Error.Type = root.getChildElement('Error', ns).getChildElement('Type', ns).getText();
+            this.Error.Code = root.getChildElement('Error', ns).getChildElement('Code', ns).getText();
+            this.Error.Message = root.getChildElement('Error', ns).getChildElement('Message', ns).getText();
             this.setMessage(this.Error.Type + ' ' + this.Error.Code + ' ' + this.Error.Message + ' ' + this.RequestId);
         }
     }
@@ -21,9 +23,13 @@ global class Sns {
     global class PublishResponse {
         global PublishResult PublishResult = new PublishResult();
         global ResponseMetadata ResponseMetadata = new ResponseMetadata();
-        public PublishResponse(HttpResponse response) {
-            this.PublishResult.MessageId = response.getBody().substringBetween('<MessageId>', '</MessageId>');
-            this.ResponseMetadata.RequestId = response.getBody().substringBetween('<RequestId>', '</RequestId>');
+        public PublishResponse(Dom.Document dom) {
+            Dom.XmlNode root = dom.getRootElement();
+            String ns = root.getNamespace();
+            Dom.XmlNode publishResult = root.getChildElement('PublishResult', ns);
+            Dom.XmlNode responseMetadata = root.getChildElement('ResponseMetadata', ns);
+            this.PublishResult.MessageId = publishResult.getChildElement('MessageId', ns).getText();
+            this.ResponseMetadata.RequestId = responseMetadata.getChildElement('RequestId', ns).getText();
         }
     }
 
@@ -69,7 +75,7 @@ global class Sns {
         HttpResponse response = new Http().send(request);
         if (response.getStatusCode() != 200)
         {
-            throw new ErrorResponseException(response);
+            throw new ErrorResponseException(response.getBodyDocument());
         }
         
         /**
@@ -77,7 +83,7 @@ global class Sns {
          * When a messageId is returned, the message has been saved
          * and Amazon SNS will attempt to deliver it shortly.
          */
-        return new PublishResponse(response);
+        return new PublishResponse(response.getBodyDocument());
     }
     
 }
