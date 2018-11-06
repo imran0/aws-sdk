@@ -1,18 +1,30 @@
 # Amazon Web Services SDK for Salesforce Apex
 
-The AWS SDK for Salesforce makes it easy for developers to access Amazon Web Services in their Apex code, and build robust applications and software using services like Amazon S3, Amazon EC2, etc. You can get started in minutes by [installing the package](installing the package).
-
-#### Amazon Simple Storage Service (S3) SDK
-
-S3 is storage for the Internet. The [Apex client](https://github.com/bigassforce/aws-sdk/blob/master/src/classes/S3.cls) gives you a kind of [proxy](https://en.wikipedia.org/wiki/Proxy_pattern) for manipulating both buckets and contents. You can create and destroy objects, and presign a download URL, given the bucket name and the object key.
-
-<img src="https://docs.aws.amazon.com/ko_kr/AmazonS3/latest/gsg/images/flowSignUpForS3.png" />
+The AWS SDK for Salesforce makes it easy for developers to access Amazon Web Services in their Apex code, and build robust applications and software using services like Amazon S3, Amazon EC2, etc. You can get started in minutes by installing the package: **[/packaging/installPackage.apexp?p0=04t58000000Uret](/packaging/installPackage.apexp?p0=04t58000000Uret)**.
 
 ###### Sign up then go to your AWS Console > Security Credentials > Access Keys:
 
     String access = 'XXXXXXXXXXXXXXXXXXXX';
     String secret = 'YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY';
     AwsSdk.Connector connector = new AwsSdk.Connector(access, secret);
+
+#### Amazon Simple Notification Service (SNS) SDK
+
+SNS is an infrastructure for delivering messages. Publishers communicate asynchronously with subscribers by producing and sending a message to a topic. Subscribers include web servers / email addresses / Amazon SQS queues / AWS Lambda functions.
+
+<img src="https://docs.aws.amazon.com/sns/latest/dg/images/sns-how-works.png" />
+
+###### Publishing messages:
+
+    AwsSdk.Sns sns = connector.sns(region);
+    String topicArn = 'arn:aws:sns:eu-west-2:887766554433:New-Orders';
+    sns.publish(topicArn, data);
+
+#### Amazon Simple Storage Service (S3) SDK
+
+S3 is storage for the Internet. The [Apex client](https://github.com/bigassforce/aws-sdk/blob/master/src/classes/S3.cls) gives you a kind of [proxy](https://en.wikipedia.org/wiki/Proxy_pattern) for manipulating both buckets and contents. You can create and destroy objects, and presign a download URL, given the bucket name and the object key.
+
+<img src="https://docs.aws.amazon.com/ko_kr/AmazonS3/latest/gsg/images/flowSignUpForS3.png" />
 
 ###### Creating a bucket:
 
