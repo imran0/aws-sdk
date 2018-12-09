@@ -12,12 +12,12 @@
  * AwsSdk.Ec2 ec2 = connector.ec2(region);
  * AwsSdk.Ec2.DescribeInstancesResponse response = ec2.describeInstances(null);
  */
-public class Ec2 {
+global class Ec2 {
 
-    class ClientException extends Exception {}
+    global class ClientException extends Exception {}
 
     Connector connector;
-    public Ec2(Connector connector, String region) {
+    global Ec2(Connector connector, String region) {
         this.connector = connector;
         this.connector.region = region;
         this.connector.service = 'ec2';
@@ -27,36 +27,36 @@ public class Ec2 {
      * Describes one or more of your instances.
      * https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInstances.html
      */
-    public class DescribeInstancesRequest {
+    global class DescribeInstancesRequest {
 
         /**
          * Checks whether you have the required permissions for the action, without actually making the
          * request, and provides an error response. If you have the required permissions, the error response
          * is DryRunOperation. Otherwise, it is UnauthorizedOperation.
          */
-        public Boolean DryRun;
+        global Boolean DryRun;
 
         /**
          * One or more filters.
          */
-        public List<Filter> Filter;
+        global List<Filter> Filter;
 
         /**
          * One or more instance IDs.
          */
-        public List<String> InstanceId;
+        global List<String> InstanceId;
 
         /**
          * The maximum number of results to return in a single call. To retrieve the remaining results, make
          * another call with the returned NextToken value. This value can be between 5 and 1000. You cannot
          * specify this parameter and the instance IDs parameter in the same call.
          */
-        public Integer MaxResults;
+        global Integer MaxResults;
 
         /**
          * The token to request the next page of results.
          */
-        public String NextToken;
+        global String NextToken;
 
     }
 
@@ -65,17 +65,17 @@ public class Ec2 {
      * Filters can be used to match a set of resources by various criteria, such as tags, attributes, or IDs.
      * https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_Filter.html
      */
-    public class Filter {
+    global class Filter {
 
         /**
          * The name of the filter. Filter names are case-sensitive.
          */
-        public String Name;
+        global String Name;
 
         /**
          * One or more filter values. Filter values are case-sensitive.
          */
-        public List<String> Value;
+        global List<String> Value;
 
     }
 
@@ -83,24 +83,24 @@ public class Ec2 {
      * Describes one or more regions that are currently available to you.
      * https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeRegions.html
      */
-    public class DescribeRegionsRequest {
+    global class DescribeRegionsRequest {
 
         /**
          * Checks whether you have the required permissions for the action, without actually making the
          * request, and provides an error response. If you have the required permissions, the error response
          * is DryRunOperation. Otherwise, it is UnauthorizedOperation.
          */
-        public Boolean DryRun;
+        global Boolean DryRun;
 
         /**
          * One or more filters.
          */
-        public List<Filter> Filter;
+        global List<Filter> Filter;
 
         /**
          * The names of one or more regions.
          */
-        public List<String> RegionName;
+        global List<String> RegionName;
 
     }
 
@@ -108,22 +108,22 @@ public class Ec2 {
      * Launches the specified number of instances using an AMI for which you have permissions.
      * https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_RunInstances.html
      */
-    public class RunInstancesRequest {
+    global class RunInstancesRequest {
 
         /**
          * Reserved.
          */
-        public String AdditionalInfo;
+        global String AdditionalInfo;
 
         /**
          * The block device mapping.
          */
-        public List<BlockDeviceMapping> BlockDeviceMapping;
+        global List<BlockDeviceMapping> BlockDeviceMapping;
 
         /**
          * Unique, case-sensitive identifier you provide to ensure the idempotency of the request.
          */
-        public String ClientToken;
+        global String ClientToken;
 
         /**
          * If you set this parameter to true, you can't terminate the instance using the Amazon EC2 console,
@@ -134,14 +134,14 @@ public class Ec2 {
          * Alternatively, if you set InstanceInitiatedShutdownBehavior to terminate, you can terminate the
          * instance by running the shutdown command from the instance.
          */
-        public Boolean DisableApiTermination;
+        global Boolean DisableApiTermination;
 
         /**
          * Checks whether you have the required permissions for the action, without actually making the
          * request, and provides an error response. If you have the required permissions, the error response
          * is DryRunOperation. Otherwise, it is UnauthorizedOperation.
          */
-        public Boolean DryRun;
+        global Boolean DryRun;
 
         /**
          * Indicates whether the instance is optimized for EBS I/O. This optimization provides dedicated
@@ -149,92 +149,92 @@ public class Ec2 {
          * performance. This optimization isn't available with all instance types. Additional usage charges
          * apply when using an EBS-optimized instance.
          */
-        public Boolean EbsOptimized;
+        global Boolean EbsOptimized;
 
         /**
          * The IAM instance profile.
          */
-        public IamInstanceProfileSpecification IamInstanceProfile;
+        global IamInstanceProfileSpecification IamInstanceProfile;
 
         /**
          * The ID of the AMI, which you can get by calling DescribeImages.
          */
-        public String ImageId;
+        global String ImageId;
 
         /**
          * Indicates whether an instance stops or terminates when you initiate shutdown from the instance
          * (using the operating system command for system shutdown).
          */
-        public String InstanceInitiatedShutdownBehavior;
+        global String InstanceInitiatedShutdownBehavior;
 
         /**
          * The instance type. For more information, see Instance Types in the Amazon Elastic Compute Cloud
          * User Guide.
          */
-        public String InstanceType = 't2.micro';
+        global String InstanceType = 't2.micro';
 
         /**
          * The ID of the kernel.
          */
-        public String KernelId;
+        global String KernelId;
 
         /**
          * The name of the key pair. You can create a key pair using CreateKeyPair or ImportKeyPair.
          */
-        public String KeyName;
+        global String KeyName;
 
         /**
          * The maximum number of instances to launch. If you specify more instances than Amazon EC2 can
          * launch in the target Availability Zone, Amazon EC2 launches the largest possible number of
          * instances above MinCount.
          */
-        public Integer MaxCount = 1;
+        global Integer MaxCount = 1;
 
         /**
          * The minimum number of instances to launch. If you specify a minimum that is more instances than
          * Amazon EC2 can launch in the target Availability Zone, Amazon EC2 launches no instances.
          */
-        public Integer MinCount = 1;
+        global Integer MinCount = 1;
 
         /**
          * The monitoring for the instance.
          */
-        public RunInstancesMonitoringEnabled Monitoring;
+        global RunInstancesMonitoringEnabled Monitoring;
 
         /**
          * One or more network interfaces.
          */
-        public List<InstanceNetworkInterfaceSpecification> NetworkInterface;
+        global List<InstanceNetworkInterfaceSpecification> NetworkInterface;
 
         /**
          * The placement for the instance.
          */
-        public Placement Placement;
+        global Placement Placement;
 
         /**
          * The primary IP address. You must specify a value from the IP address range of the subnet.
          */
-        public String PrivateIpAddress;
+        global String PrivateIpAddress;
 
         /**
          * The ID of the RAM disk.
          */
-        public String RamdiskId;
+        global String RamdiskId;
 
         /**
          * One or more security group IDs. You can create a security group using CreateSecurityGroup.
          */
-        public List<String> SecurityGroupId;
+        global List<String> SecurityGroupId;
 
         /**
          * One or more security group names. For a nondefault VPC, you must use security group IDs instead.
          */
-        public List<String> SecurityGroup;
+        global List<String> SecurityGroup;
 
         /**
          * The ID of the subnet to launch the instance into.
          */
-        public String SubnetId;
+        global String SubnetId;
 
         /**
          * Data to configure the instance, or a script to run during instance launch. For more information,
@@ -242,7 +242,7 @@ public class Ec2 {
          * API calls, the text must be base64-encoded. For command line tools, the encoding is performed for
          * you, and you can load the text from a file.
          */
-        public String UserData;
+        global String UserData;
 
     }
 
@@ -250,17 +250,17 @@ public class Ec2 {
      * Describes an IAM instance profile.
      * https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_IamInstanceProfileSpecification.html
      */
-    public class IamInstanceProfileSpecification {
+    global class IamInstanceProfileSpecification {
 
         /**
          * The Amazon Resource Name (ARN) of the instance profile.
          */
-        public String Arn;
+        global String Arn;
 
         /**
          * The name of the instance profile.
          */
-        public String Name;
+        global String Name;
 
     }
 
@@ -268,12 +268,12 @@ public class Ec2 {
      * Describes the monitoring for the instance.
      * https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_RunInstancesMonitoringEnabled.html
      */
-    public class RunInstancesMonitoringEnabled {
+    global class RunInstancesMonitoringEnabled {
 
         /**
          * Indicates whether monitoring is enabled for the instance.
          */
-        public Boolean Enabled;
+        global Boolean Enabled;
 
     }
 
@@ -281,7 +281,7 @@ public class Ec2 {
      * Describes a network interface.
      * https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_InstanceNetworkInterfaceSpecification.html
      */
-    public class InstanceNetworkInterfaceSpecification {
+    global class InstanceNetworkInterfaceSpecification {
 
         /**
          * Indicates whether to assign a public IP address to an instance you launch in a VPC. The public IP
@@ -289,94 +289,94 @@ public class Ec2 {
          * network interface, not an existing one. You cannot specify more than one network interface in the
          * request. If launching into a default subnet, the default value is true.
          */
-        public Boolean AssociatePublicIpAddress;
+        global Boolean AssociatePublicIpAddress;
 
         /**
          * If set to true, the interface is deleted when the instance is terminated. You can specify true
          * only if creating a new network interface when launching an instance.
          */
-        public Boolean DeleteOnTermination;
+        global Boolean DeleteOnTermination;
 
         /**
          * The description of the network interface. Applies only if creating a network interface when
          * launching an instance.
          */
-        public String Description;
+        global String Description;
 
         /**
          * The index of the device on the instance for the network interface attachment. If you are specifying
          * a network interface in a RunInstances request, you must provide the device index.
          */
-        public Integer DeviceIndex;
+        global Integer DeviceIndex;
 
         /**
          * The IDs of the security groups for the network interface. Applies only if creating a network
          * interface when launching an instance.
          */
-        public List<String> SecurityGroupId;
+        global List<String> SecurityGroupId;
 
         /**
          * The ID of the network interface.
          */
-        public String NetworkInterfaceId;
+        global String NetworkInterfaceId;
 
         /**
          * The private IP address of the network interface. Applies only if creating a network interface when
          * launching an instance.
          */
-        public String PrivateIpAddress;
+        global String PrivateIpAddress;
 
         /**
          * One or more private IP addresses to assign to the network interface. Only one private IP address
          * can be designated as primary.
          */
-        public List<PrivateIpAddressSpecification> PrivateIpAddressesSet;
+        global List<PrivateIpAddressSpecification> PrivateIpAddressesSet;
 
         /**
          * The number of secondary private IP addresses. You can't specify this option and specify more than
          * one private IP address using the private IP addresses option.
          */
-        public Integer SecondaryPrivateIpAddressCount;
+        global Integer SecondaryPrivateIpAddressCount;
 
         /**
          * The ID of the subnet associated with the network string. Applies only if creating a network
          * interface when launching an instance.
          */
-        public String SubnetId;
+        global String SubnetId;
     }
 
     /**
      * Describes a secondary private IP address for a network interface.
      * https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_PrivateIpAddressSpecification.html
      */
-    public class PrivateIpAddressSpecification {
+    global class PrivateIpAddressSpecification {
 
         /**
          * Indicates whether the private IP address is the primary private IP address. Only one IP address
          * can be designated as primary.
          */
-        public Boolean Primary;
+        global Boolean Primary;
 
         /**
          * The private IP addresses.
          */
-        public String PrivateIpAddress;
+        global String PrivateIpAddress;
 
     }
 
-    public class TerminateInstancesRequest {
+    global class TerminateInstancesRequest {
 
         /**
          * Checks whether you have the required permissions for the action, without actually making the request, and
          * provides an error response. If you have the required permissions, the error response is DryRunOperation.
          * Otherwise, it is UnauthorizedOperation.
          */
-        public Boolean DryRun;
+        global Boolean DryRun;
 
         /**
          * One or more instance IDs.
          */
-        public List<String> InstanceId;
+        global List<String> InstanceId;
 
     }
 
@@ -388,7 +388,7 @@ public class Ec2 {
      * request.InstanceId = new List<String>{'i-00cf11c1'};
      * client.describeInstances(request);
      */
-    public DescribeInstancesResponse describeInstances(DescribeInstancesRequest describeInstancesRequest) {
+    global DescribeInstancesResponse describeInstances(DescribeInstancesRequest describeInstancesRequest) {
         Map<String,String> parameters = new RequestFormatter(describeInstancesRequest).getMap();
         parameters.put('Version', '2015-10-01');
         parameters.put('Action', 'DescribeInstances');
@@ -414,7 +414,7 @@ public class Ec2 {
      * request.RegionName = new List<String>{'us-east-1'};
      * client.describeRegions(request);
      */
-    public DescribeRegionsResponse describeRegions(DescribeRegionsRequest describeRegionsRequest) {
+    global DescribeRegionsResponse describeRegions(DescribeRegionsRequest describeRegionsRequest) {
         Map<String,String> parameters = new RequestFormatter(describeRegionsRequest).getMap();
         parameters.put('Version', '2015-10-01');
         parameters.put('Action', 'DescribeRegions');
@@ -440,7 +440,7 @@ public class Ec2 {
      * request.ImageId = 'ami-08111162';
      * client.runInstances(request);
      */
-    public RunInstancesResponse runInstances(RunInstancesRequest runInstancesRequest) {
+    global RunInstancesResponse runInstances(RunInstancesRequest runInstancesRequest) {
         Map<String,String> parameters = new RequestFormatter(runInstancesRequest).getMap();
         parameters.put('Version', '2015-10-01');
         parameters.put('Action', 'RunInstances');
@@ -462,7 +462,7 @@ public class Ec2 {
      * Shuts down one or more instances.
      * https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_TerminateInstances.html
      */
-    public TerminateInstancesResponse terminateInstances(TerminateInstancesRequest terminateInstancesRequest) {
+    global TerminateInstancesResponse terminateInstances(TerminateInstancesRequest terminateInstancesRequest) {
         Map<String,String> parameters = new RequestFormatter(terminateInstancesRequest).getMap();
         parameters.put('Version', '2015-10-01');
         parameters.put('Action', 'TerminateInstances');
@@ -484,17 +484,17 @@ public class Ec2 {
      * Describes one or more of your instances.
      * https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInstances.html
      */
-    public class DescribeInstancesResponse {
+    global class DescribeInstancesResponse {
 
         /**
          * The ID of the request.
          */
-        public String requestId;
+        global String requestId;
 
         /**
          * Zero or more reservations.
          */
-        public List<Reservation> reservationSet;
+        global List<Reservation> reservationSet;
 
     }
 
@@ -502,71 +502,71 @@ public class Ec2 {
      * Describes a reservation.
      * https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_Reservation.html
      */
-    public class Reservation {
+    global class Reservation {
 
         /**
          * One or more security groups.
          */
-        public List<SecurityGroup> groupSet;
+        global List<SecurityGroup> groupSet;
 
         /**
          * One or more instances.
          */
-        public List<Instance> instancesSet;
+        global List<Instance> instancesSet;
 
         /**
          * The ID of the AWS account that owns the reservation.
          */
-        public String ownerId;
+        global String ownerId;
 
         /**
          * The ID of the reservation.
          */
-        public String reservationId;
+        global String reservationId;
     }
 
     /**
      * Describes a security group.
      * https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_GroupIdentifier.html
      */
-    public class SecurityGroup {
+    global class SecurityGroup {
 
         /**
          * The ID of the security group.
          */
-        public String groupId;
+        global String groupId;
 
         /**
          * The name of the security group.
          */
-        public String groupName;
+        global String groupName;
     }
 
     /**
      * Describes an instance.
      * https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_Instance.html
      */
-    public class Instance {
+    global class Instance {
 
         /**
          * The AMI launch index, which can be used to find this instance in the launch group.
          */
-        public String amiLaunchIndex;
+        global String amiLaunchIndex;
 
         /**
          * The architecture of the image.
          */
-        public String architecture;
+        global String architecture;
 
         /**
          * Any block device mapping entries for the instance.
          */
-        public List<BlockDeviceMapping> blockDeviceMapping;
+        global List<BlockDeviceMapping> blockDeviceMapping;
 
         /**
          * The idempotency token you provided when you launched the instance, if applicable.
          */
-        public String clientToken;
+        global String clientToken;
 
         /**
          * Indicates whether the instance is optimized for EBS I/O. This optimization provides dedicated
@@ -574,96 +574,96 @@ public class Ec2 {
          * This optimization isn't available with all instance types. Additional usage charges apply when
          * using an EBS Optimized instance.
          */
-        public Boolean ebsOptimized;
+        global Boolean ebsOptimized;
 
         /**
          * The hypervisor type of the instance.
          */
-        public String hypervisor;
+        global String hypervisor;
 
         /**
          * The ID of the AMI used to launch the instance.
          */
-        public String imageId;
+        global String imageId;
 
         /**
          * The ID of the instance.
          */
-        public String instanceId;
+        global String instanceId;
 
         /**
          * The instance type.
          */
-        public String instanceType;
+        global String instanceType;
 
         /**
          * The name of the key pair, if this instance was launched with an associated key pair.
          */
-        public String keyName;
+        global String keyName;
 
         /**
          * The time the instance was launched.
          */
-        public Datetime launchTime;
+        global Datetime launchTime;
 
         /**
          * The monitoring information for the instance.
          */
-        public Monitoring monitoring;
+        global Monitoring monitoring;
 
         /**
          * One or more network interfaces for the instance.
          */
-        public List<NetworkInterface> networkInterfaceSet;
+        global List<NetworkInterface> networkInterfaceSet;
 
         /**
          * The location where the instance launched, if applicable.
          */
-        public Placement placement;
+        global Placement placement;
 
         /**
          * The private DNS name assigned to the instance. This DNS name can only be used inside the Amazon EC2
          * network. This name is not available until the instance enters the running state. For EC2-VPC, this
          * name is only available if you've enabled DNS hostnames for your VPC.
          */
-        public String privateDnsName;
+        global String privateDnsName;
 
         /**
          * The private IP address assigned to the instance.
          */
-        public String privateIpAddress;
+        global String privateIpAddress;
 
         /**
          * The product codes attached to this instance, if applicable.
          */
-        public List<ProductCode> productCodes;
+        global List<ProductCode> productCodes;
 
         /**
          * The public DNS name assigned to the instance. This name is not available until the instance enters
          * the running state. For EC2-VPC, this name is only available if you've enabled DNS hostnames for
          * your VPC.
          */
-        public String dnsName;
+        global String dnsName;
 
         /**
          * The public IP address assigned to the instance, if applicable.
          */
-        public String ipAddress;
+        global String ipAddress;
 
         /**
          * The root device name (for example, /dev/sda1 or /dev/xvda).
          */
-        public String rootDeviceName;
+        global String rootDeviceName;
 
         /**
          * The root device type used by the AMI. The AMI can use an EBS volume or an instance store volume.
          */
-        public String rootDeviceType;
+        global String rootDeviceType;
 
         /**
          * One or more security groups for the instance.
          */
-        public List<SecurityGroup> groupSet;
+        global List<SecurityGroup> groupSet;
 
         /**
          * Specifies whether to enable an instance launched in a VPC to perform NAT. This controls whether
@@ -671,37 +671,37 @@ public class Ec2 {
          * and false means checking is disabled. The value must be false for the instance to perform NAT. For
          * more information, see NAT Instances in the Amazon Virtual Private Cloud User Guide.
          */
-        public Boolean sourceDestCheck;
+        global Boolean sourceDestCheck;
 
         /**
          * The private IP address assigned to the instance.
          */
-        public InstanceState instanceState;
+        global InstanceState instanceState;
 
         /**
          * The reason for the most recent state transition. This might be an empty string.
          */
-        public Reason reason;
+        global Reason reason;
 
         /**
          * The ID of the subnet in which the instance is running.
          */
-        public String subnetId;
+        global String subnetId;
 
         /**
          * Any tags assigned to the instance.
          */
-        public List<Tag> tagSet;
+        global List<Tag> tagSet;
 
         /**
          * The virtualization type of the instance.
          */
-        public String virtualizationType;
+        global String virtualizationType;
 
         /**
          * The ID of the VPC in which the instance is running.
          */
-        public String vpcId;
+        global String vpcId;
 
     }
 
@@ -709,43 +709,43 @@ public class Ec2 {
      * Describes a block device mapping.
      * https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_InstanceBlockDeviceMapping.html
      */
-    public class BlockDeviceMapping {
+    global class BlockDeviceMapping {
 
         /**
          * The device name exposed to the instance (for example, /dev/sdh or xvdh).
          */
-        public String deviceName;
+        global String deviceName;
 
         /**
          * Parameters used to automatically set up EBS volumes when the instance is launched.
          */
-        public BlockDevice ebs;
+        global BlockDevice ebs;
     }
 
     /**
      * Describes a parameter used to set up an EBS volume in a block device mapping.
      * https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_EbsInstanceBlockDevice.html
      */
-    public class BlockDevice {
+    global class BlockDevice {
         /**
          * The time stamp when the attachment initiated.
          */
-        public Datetime attachTime;
+        global Datetime attachTime;
 
         /**
          * Indicates whether the volume is deleted on instance termination.
          */
-        public Boolean deleteOnTermination;
+        global Boolean deleteOnTermination;
 
         /**
          * The attachment state.
          */
-        public String status;
+        global String status;
 
         /**
          * The ID of the EBS volume.
          */
-        public String volumeId;
+        global String volumeId;
 
     }
 
@@ -753,85 +753,85 @@ public class Ec2 {
      * Describes the monitoring for the instance.
      * https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_Monitoring.html
      */
-    public class Monitoring {
-        public String state; //disabled
+    global class Monitoring {
+        global String state; //disabled
     }
 
     /**
      * Describes a network interface.
      * https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_InstanceNetworkInterface.html
      */
-    public class NetworkInterface {
+    global class NetworkInterface {
 
         /**
          * The association information for an Elastic IP associated with the network interface.
          */
-        public NetworkAssociation association;
+        global NetworkAssociation association;
 
         /**
          * The network interface attachment.
          */
-        public NetworkAttachment attachment;
+        global NetworkAttachment attachment;
 
         /**
          * The description.
          */
-        public String description;
+        global String description;
 
         /**
          * One or more security groups.
          */
-        public List<SecurityGroup> groupSet;
+        global List<SecurityGroup> groupSet;
 
         /**
          * The MAC address.
          */
-        public String macAddress;
+        global String macAddress;
 
         /**
          * The ID of the network interface.
          */
-        public String networkInterfaceId;
+        global String networkInterfaceId;
 
         /**
          * The ID of the AWS account that created the network interface.
          */
-        public String ownerId;
+        global String ownerId;
 
         /**
          * The private DNS name.
          */
-        public String privateDnsName;
+        global String privateDnsName;
 
         /**
          * The IP address of the network interface within the subnet.
          */
-        public String privateIpAddress;
+        global String privateIpAddress;
 
         /**
          * The private IP addresses associated with the network interface.
          */
-        public List<PrivateIpAddress> privateIpAddressesSet;
+        global List<PrivateIpAddress> privateIpAddressesSet;
 
         /**
          * Indicates whether to validate network traffic to or from this network interface.
          */
-        public Boolean sourceDestCheck;
+        global Boolean sourceDestCheck;
 
         /**
          * The status of the network interface.
          */
-        public String status;
+        global String status;
 
         /**
          * The ID of the subnet.
          */
-        public String subnetId;
+        global String subnetId;
 
         /**
          * The ID of the VPC.
          */
-        public String vpcId;
+        global String vpcId;
 
     }
 
@@ -840,22 +840,22 @@ public class Ec2 {
      * Describes association information for an Elastic IP address.
      * https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_InstanceNetworkInterfaceAssociation.html
      */
-    public class NetworkAssociation {
+    global class NetworkAssociation {
 
         /**
          * The ID of the owner of the Elastic IP address.
          */
-        public String ipOwnerId;
+        global String ipOwnerId;
 
         /**
          * The public DNS name.
          */
-        public String publicDnsName;
+        global String publicDnsName;
 
         /**
          * The public IP address or Elastic IP address bound to the network interface.
          */
-        public String publicIp;
+        global String publicIp;
 
     }
 
@@ -863,95 +863,95 @@ public class Ec2 {
      * Describes a network interface attachment.
      * https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_InstanceNetworkInterfaceAttachment.html
      */
-    public class NetworkAttachment {
+    global class NetworkAttachment {
 
         /**
          * The ID of the network interface attachment.
          */
-        public String attachmentId;
+        global String attachmentId;
 
         /**
          * The time stamp when the attachment initiated.
          */
-        public Datetime attachTime;
+        global Datetime attachTime;
 
         /**
          * Indicates whether the network interface is deleted when the instance is terminated.
          */
-        public Boolean deleteOnTermination;
+        global Boolean deleteOnTermination;
 
         /**
          * The index of the device on the instance for the network interface attachment.
          */
-        public String deviceIndex;
+        global String deviceIndex;
 
         /**
          * The attachment state.
          */
-        public String status;
+        global String status;
     }
 
     /**
      * Describes a private IP address.
      * https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_InstancePrivateIpAddress.html
      */
-    public class PrivateIpAddress {
+    global class PrivateIpAddress {
 
         /**
          * The association information for an Elastic IP address for the network interface.
          */
-        public NetworkAssociation association;
+        global NetworkAssociation association;
 
         /**
          * Indicates whether this IP address is the primary private IP address of the network interface.
          */
-        public Boolean primary;
+        global Boolean primary;
 
         /**
          * Indicates whether this IP address is the primary private IP address of the network interface.
          */
-        public String privateDnsName;
+        global String privateDnsName;
 
         /**
          * privateIpAddress
          */
-        public String privateIpAddress;
+        global String privateIpAddress;
     }
 
     /**
      * Describes the placement for the instance.
      * https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_Placement.html
      */
-    public class Placement {
+    global class Placement {
 
         /**
          * The affinity setting for the instance on the Dedicated host. This parameter is not supported for
          * the ImportInstance command.
          */
-        public String Affinity;
+        global String Affinity;
 
         /**
          * The Availability Zone of the instance.
          */
-        public String AvailabilityZone;
+        global String AvailabilityZone;
 
         /**
          * The name of the placement group the instance is in (for cluster compute instances).
          */
-        public String GroupName;
+        global String GroupName;
 
         /**
          * The ID of the Dedicted host on which the instance resides. This parameter is not support for the
          * ImportInstance command.
          */
-        public String HostId;
+        global String HostId;
 
         /**
          * The tenancy of the instance (if the instance is running in a VPC). An instance with a tenancy of
          * dedicated runs on single-tenant hardware. The host tenancy is not supported for the ImportInstance
          * command.
          */
-        public String Tenancy;
+        global String Tenancy;
 
     }
 
@@ -959,17 +959,17 @@ public class Ec2 {
      * Describes a product code.
      * https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_ProductCode.html
      */
-    public class ProductCode {
+    global class ProductCode {
 
         /**
          * The product code.
          */
-        public String productCode;
+        global String productCode;
 
         /**
          * The type of product code.
          */
-        public String type;
+        global String type;
 
     }
 
@@ -977,7 +977,7 @@ public class Ec2 {
      * Describes the current state of the instance.
      * https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_InstanceState.html
      */
-    public class InstanceState {
+    global class InstanceState {
         /**
          * The low byte represents the state. The high byte is an opaque internal value and should be ignored.
          * - 00 pending
@@ -987,7 +987,7 @@ public class Ec2 {
          * - 64 stopping
          * - 80 stopped
          */
-        public String code;
+        global String code;
 
         /**
          * The current state of the instance.
@@ -998,7 +998,7 @@ public class Ec2 {
          * - stopping
          * - stopped
          */
-        public String name;
+        global String name;
 
     }
 
@@ -1006,17 +1006,17 @@ public class Ec2 {
      * Describes a state change.
      * https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_StateReason.html
      */
-    public class Reason {
+    global class Reason {
 
         /**
          * The reason code for the state change.
          */
-        public String code;
+        global String code;
 
         /**
          * The message for the state change.
          */
-        public String message;
+        global String message;
 
     }
 
@@ -1024,34 +1024,34 @@ public class Ec2 {
      * Describes a tag.
      * https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_Tag.html
      */
-    public class Tag {
+    global class Tag {
 
         /**
          * The key of the tag.
          */
-        public String key;
+        global String key;
 
         /**
          * The value of the tag.
          */
-        public String value;
+        global String value;
     }
 
     /**
      * Describes one or more regions that are currently available to you.
      * https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeRegions.html
      */
-    public class DescribeRegionsResponse {
+    global class DescribeRegionsResponse {
 
         /**
          * Information about one or more regions.
          */
-        public List<Region> regionInfo;
+        global List<Region> regionInfo;
 
         /**
          * The ID of the request.
          */
-        public String requestId;
+        global String requestId;
 
     }
 
@@ -1059,17 +1059,17 @@ public class Ec2 {
      * Describes a region.
      * https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_Region.html
      */
-    public class Region {
+    global class Region {
 
         /**
          * The region service endpoint.
          */
-        public String regionEndpoint;
+        global String regionEndpoint;
 
         /**
          * The name of the region.
          */
-        public String regionName;
+        global String regionName;
 
     }
 
@@ -1077,17 +1077,17 @@ public class Ec2 {
      * Launches the specified number of instances using an AMI for which you have permissions.
      * https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_RunInstances.html
      */
-    public class RunInstancesResponse {
+    global class RunInstancesResponse {
 
         /**
          * The ID of the request.
          */
-        public String requestId;
+        global String requestId;
 
         /**
          * One or more instances.
          */
-        public List<Instance> instancesSet;
+        global List<Instance> instancesSet;
 
     }
 
@@ -1095,39 +1095,39 @@ public class Ec2 {
      * Shuts down one or more instances.
      * https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_TerminateInstances.html
      */
-    public class TerminateInstancesResponse {
+    global class TerminateInstancesResponse {
 
         /**
          * Information about one or more terminated instances.
          */
-        public List<InstanceStateChange> instancesSet;
+        global List<InstanceStateChange> instancesSet;
 
         /**
          * The ID of the request.
          */
-        public String requestId;
+        global String requestId;
     }
 
     /**
      * Describes an instance state change.
      * https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_InstanceStateChange.html
      */
-    public class InstanceStateChange {
+    global class InstanceStateChange {
 
         /**
          * The current state of the instance.
          */
-        public InstanceState currentState;
+        global InstanceState currentState;
 
         /**
          * The ID of the instance.
          */
-        public String instanceId;
+        global String instanceId;
 
         /**
          * The previous state of the instance.
          */
-        public InstanceState previousState;
+        global InstanceState previousState;
 
     }
 

@@ -12,12 +12,12 @@
  * AwsApi.S3 s3 = connector.s3(region);
  * List<AwsApi.S3.Content> contents = s3.bucket('bucketname').listContents(null);
  */
-public class S3 {
+global class S3 {
 
-    public class ClientException extends Exception {}
+    global class ClientException extends Exception {}
 
     Connector connector;
-    public S3(Connector connector, String region) {
+    global S3(Connector connector, String region) {
         this.connector = connector;
         this.connector.region = region;
         this.connector.service = 's3';
@@ -27,7 +27,7 @@ public class S3 {
      * Example usage:
      * new AwsSdk.Connector('access', 'secret').s3('us-east-1').bucket('bucketname');
      */
-    public Bucket bucket(String name) {
+    global Bucket bucket(String name) {
         return new Bucket(this.connector, name);
     }
 
@@ -35,17 +35,17 @@ public class S3 {
      * This section describes operations you can perform on Amazon S3 objects.
      * https://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectOps.html
      */
-    public class Bucket {
+    global class Bucket {
 
         /**
          * Bucket's name.
          */
-        public String Name;
+        global String Name;
 
         /**
          * Date the bucket was created.
          */
-        public Datetime CreationDate;
+        global Datetime CreationDate;
 
         Connector connector;
         Bucket(Connector connector, String bucket) {
@@ -57,7 +57,7 @@ public class S3 {
          * Example usage:
          * new AwsSdk.Connector('access', 'secret').s3('us-east-1').bucket('bucketname').content('key');
          */
-        public Content content(String key) {
+        global Content content(String key) {
             return new Content(this, key);
         }
 
@@ -65,7 +65,7 @@ public class S3 {
          * This implementation of the GET operation returns some or all (up to 1000) of the objects in a bucket.
          * https://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketGET.html
          */
-        public List<Content> listContents(ListContentsRequest listContentsRequest) {
+        global List<Content> listContents(ListContentsRequest listContentsRequest) {
             PageReference pr = new PageReference('https://s3.amazonaws.com/' + this.Name);
             Map<String,String> parameters = new RequestFormatter(listContentsRequest).getMap();
             pr.getParameters().putAll(parameters);
@@ -94,7 +94,7 @@ public class S3 {
          * and inserts a delete marker, which becomes the current version of the object.
          * https://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectDELETE.html
          */
-        public HttpResponse deleteContent(String key) {
+        global HttpResponse deleteContent(String key) {
             if (key.startsWith('/')) throw new ClientException('Keys should not lead with slash');
             Url endpoint = new Url('https://s3.amazonaws.com/' + this.Name + '/' + key);
             HttpRequest request = this.connector.signedRequest('DELETE', endpoint, null, null, null);
@@ -108,7 +108,7 @@ public class S3 {
          * You must have WRITE permissions on a bucket to add an object to it.
          * https://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectPUT.html
          */
-        public HttpResponse createContent(String key, Map<String,String> headers, Blob payload) {
+        global HttpResponse createContent(String key, Map<String,String> headers, Blob payload) {
             if (key.startsWith('/')) throw new ClientException('Keys should not lead with slash');
             Url endpoint = new Url('https://s3.amazonaws.com/' + this.Name + '/' + key);
             HttpRequest request = this.connector.signedRequest('PUT', endpoint, headers, payload, null);
@@ -122,38 +122,38 @@ public class S3 {
     /**
      * Metadata about each object returned.
      */
-    public class Content {
+    global class Content {
 
         /**
          * The object's key.
          */
-        public String Key;
+        global String Key;
 
         /**
          * Date and time the object was last modified.
          */
-        public Datetime LastModified;
+        global Datetime LastModified;
 
         /**
          * The entity tag is an MD5 hash of the object. The ETag only reflects changes to the contents of an
          * object, not its metadata.
          */
-        public String ETag;
+        global String ETag;
 
         /**
          * Size in bytes of the object.
          */
-        public String Size;
+        global String Size;
 
         /**
          * STANDARD | STANDARD_IA | REDUCED_REDUNDANCY | GLACIER
          */
-        public String StorageClass;
+        global String StorageClass;
 
         /**
          * Bucket owner.
          */
-        public Owner Owner;
+        global Owner Owner;
 
         Bucket bucket;
         Content(Bucket bucket, String key) {
@@ -164,7 +164,7 @@ public class S3 {
         /**
          * Provides the time period, in seconds, for which the generated presigned URL is valid.
          */
-        public HttpRequest presign() {
+        global HttpRequest presign() {
             String method = 'GET';
             Url endpoint = new Url('https://s3.amazonaws.com/' + this.bucket.Name + '/' + this.Key);
             Map<String,String> headers = new Map<String,String>();
@@ -180,7 +180,7 @@ public class S3 {
      * buckets owned by the authenticated sender of the request.
      * https://docs.aws.amazon.com/AmazonS3/latest/API/RESTServiceGET.html
      */
-    public class ListContentsRequest {
+    global class ListContentsRequest {
 
         /**
          * A delimiter is a character you use to group keys.
@@ -191,7 +191,7 @@ public class S3 {
          * that are grouped under CommonPrefixes result element are not returned elsewhere in the response.
          *
          */
-        public String delimiter;
+        global String delimiter;
 
         /**
          * Requests Amazon S3 to encode the response and specifies the encoding method to use.
@@ -201,13 +201,13 @@ public class S3 {
          * supported in XML 1.0, you can add this parameter to request that Amazon S3 encode the keys in the
          * response.
          */
-        public String encodingType;
+        global String encodingType;
 
         /**
          * Specifies the key to start with when listing objects in a bucket. Amazon S3 returns object keys in
          * UTF-8 binary order, starting with key after the marker in order.
          */
-        public String marker;
+        global String marker;
 
         /**
          * Sets the maximum number of keys returned in the response body. You can add this to your request if
@@ -217,14 +217,14 @@ public class S3 {
          * that satisfy the search criteria but were not returned because max-keys was exceeded, the response
          * contains <IsTruncated>true</IsTruncated>. To return the additional keys, see marker.
          */
-        public String maxKeys;
+        global String maxKeys;
 
         /**
          * Limits the response to keys that begin with the specified prefix. You can use prefixes to separate
          * a bucket into different groupings of keys. (You can think of using prefix to make groups in the
          * same way you'd use a folder in a file system.)
          */
-        public String prefix;
+        global String prefix;
 
     }
 
@@ -237,7 +237,7 @@ public class S3 {
      * List<Bucket> results = s3.get();
      *
      */
-    public List<Bucket> listBuckets() {
+    global List<Bucket> listBuckets() {
         HttpRequest request = this.connector.signedRequest('GET', new Url('https://s3.amazonaws.com/'), null, null, null);
         HttpResponse response = new Http().send(request);
         if (response.getStatusCode() != 200) throw new ClientException(response.getBody());
@@ -251,7 +251,7 @@ public class S3 {
      * This implementation of the PUT operation creates a new bucket.
      * https://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketPUT.html
      */
-    public HttpResponse createBucket(String bucketName) {
+    global HttpResponse createBucket(String bucketName) {
         HttpRequest request = this.connector.signedRequest('PUT', new Url('https://s3.amazonaws.com/' + bucketName), null, null, null);
         HttpResponse response = new Http().send(request);
         if (response.getStatusCode() != 200) throw new ClientException(response.getBody());
@@ -264,7 +264,7 @@ public class S3 {
      * be deleted before the bucket itself can be deleted.
      * https://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketDELETE.html
      */
-    public HttpResponse deleteBucket(String bucketName) {
+    global HttpResponse deleteBucket(String bucketName) {
         HttpRequest request = this.connector.signedRequest('DELETE', new Url('https://s3.amazonaws.com/' + bucketName), null, null, null);
         HttpResponse response = new Http().send(request);
         if (response.getStatusCode() != 204) throw new ClientException(response.getBody());
@@ -399,25 +399,25 @@ public class S3 {
      * sender of the request.
      * https://docs.aws.amazon.com/AmazonS3/latest/API/RESTServiceGET.html
      */
-    public class ListAllMyBucketsResult {
-        public Owner Owner;
-        public List<Bucket> Buckets;
+    global class ListAllMyBucketsResult {
+        global Owner Owner;
+        global List<Bucket> Buckets;
     }
 
     /**
      * Container for bucket owner information.
      */
-    public class Owner {
+    global class Owner {
 
         /**
          * Bucket owner's user ID.
          */
-        public String ID;
+        global String ID;
 
         /**
          * Bucket owner's display name.
          */
-        public String DisplayName;
+        global String DisplayName;
 
     }
 
@@ -425,37 +425,37 @@ public class S3 {
      * This implementation of the GET operation returns some or all (up to 1000) of the objects in a bucket.
      * https://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketGET.html
      */
-    public class ListBucketResult {
+    global class ListBucketResult {
 
         /**
          * Name of the bucket.
          */
-        public String Name;
+        global String Name;
 
         /**
          * Keys that begin with the indicated prefix.
          */
-        public String Prefix;
+        global String Prefix;
 
         /**
          * Indicates where in the bucket listing begins.
          */
-        public String Marker;
+        global String Marker;
 
         /**
          * The maximum number of keys returned in the response body.
          */
-        public Integer MaxKeys;
+        global Integer MaxKeys;
 
         /**
          * Specifies whether (true) or not (false) all of the results were returned.
          */
-        public Boolean IsTruncated;
+        global Boolean IsTruncated;
 
         /**
          * Metadata about each object returned.
          */
-        public List<Content> Contents;
+        global List<Content> Contents;
     }
 
 }

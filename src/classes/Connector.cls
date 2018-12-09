@@ -21,7 +21,7 @@ global class Connector {
         this.secretKey = secretKey;
     }
 
-    public S3 s3(String region) {
+    global S3 s3(String region) {
         return new s3(this, region);
     }
 
