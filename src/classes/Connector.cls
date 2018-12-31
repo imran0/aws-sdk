@@ -49,8 +49,8 @@ global class Connector {
         //assemble
 
         String termination = 'aws4_request';
-        String iso8601date = this.now.formatGmt('YYYYMMdd');
-        String iso8601time = this.now.formatGmt('YYYYMMdd\'T\'HHmmss\'Z\'');
+        String iso8601date = this.now.formatGmt('yyyyMMdd');
+        String iso8601time = this.now.formatGmt('yyyyMMdd\'T\'HHmmss\'Z\'');
         String credentialScope = iso8601date + '/' + this.region + '/' + this.service + '/' + termination;
 
         //prepare headers
